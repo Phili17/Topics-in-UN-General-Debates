@@ -89,16 +89,34 @@ attributes(tmResult)
 beta <- tmResult$terms
 theta <- tmResult$topics
 
-terms(topicModel, 10)
+terme <- terms(topicModel, 10)
 
-# fuer die Topics Namen "bauen" in Uebung, fuer Arbeit nicht sinnvoll
-#top5termsPerTopic <- terms(topicModel, 5)
-#topicNames <- apply(top5termsPerTopic, 2, paste, collapse = " ")
+# manuelle Zuweisung von Namen fuer jedes Topic (per Google Gemini 3.1 Pro kreiert)
+topicNames <- c("Globale Brennpunkte der Blockfreien-Rhetorik",
+                "Lateinamerika: Interventionismus und Menschenrechte",
+                "Geteilte Staaten und Territorialkonflikte",
+                "Nukleare Abrüstung im Ost-West-Konflikt",
+                "Nord-Süd-Konflikt und postkoloniale Rohstoffökonomie",
+                "Post-Sowjetischer Raum und Internationaler Terrorismus",
+                "Polykrise: Klimawandel, SDGs und COVID-19",
+                "Neue Weltwirtschaftsordnung (NIEO) und Blockfreiheit",
+                "Afrikanische Dekolonisierung",
+                "SIDS (Small Island Developing States) und Klimavulnerabilität",
+                "UN-Gründung und die frühe Nachkriegsordnung",
+                "Afrika in der Annan-Ära: Peacekeeping und HIV/AIDS",
+                "Nahostkonflikt und Palästina-Frage",
+                "Südostasiatische Konflikte & ASEAN",
+                "Liberaler Institutionalismus und Multilateralismus",
+                "Rüstungswettlauf und das geteilte Deutschland",
+                "Militarisierung und Großmachtrivalität",
+                "'Neue Weltordnung' und Boutros-Ghali-Ära",
+                "Krisengebiete in West- und Zentralafrika",
+                "Von den MDGs zu den SDGs")
 
 # ich weiss nicht, ob es der richtige Weg ist, nur Bigramme zu vewenden!?!?!?!?
 # -> Diskussion
 
-# Visualisierung
+## Visualisierung
 
 # LDAvis browser analog zur Uebung:
 library(LDAvis)
@@ -108,3 +126,28 @@ json <- createJSON(phi = beta, theta = theta, doc.length = rowSums(bigram_dfm),
                    vocab = colnames(bigram_dfm), term.frequency = colSums(bigram_dfm), mds.method = svd_tsne,
                    plot.opts = list(xlab = "", ylab = "")) 
 serVis(json)
+
+
+# Topic proportions over time analog zur Uebung:
+library(reshape2)
+library(ggplot2)
+library(pals)
+# append decade information for aggregation 
+data_frame$decade <- paste0(substr(data_frame$year, 0, 3), "0")
+# get mean topic proportions per decade 
+topic_proportion_per_decade <- aggregate(theta,
+                                         by = list(decade = data_frame$decade), mean)
+# set topic names to aggregated columns
+colnames(topic_proportion_per_decade)[2:(K+1)] <- topicNames
+# reshape data frame
+vizDataFrame <- melt(topic_proportion_per_decade, id.vars = "decade")
+# plot topic proportions per deacde as bar plot
+require(pals)
+
+ggplot(vizDataFrame,
+       aes(x=decade, y=value, fill=variable)) +
+  geom_bar(stat = "identity") + ylab("proportion") + 
+  scale_fill_manual(values = paste0(alphabet(20), "FF"), name = "decade") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
