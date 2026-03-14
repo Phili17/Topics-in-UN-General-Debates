@@ -86,24 +86,25 @@ topicModel <- LDA(bigram_dfm, K, method = "Gibbs", control = list(
 ))
 tmResult <- posterior(topicModel)
 attributes(tmResult)
-#ncol(bigram_dfm) # lengthOfVocab
-# topics are probability distribtions over the entire # vocabulary
-#beta <- tmResult$terms # get beta from results 
-#dim(beta) # K distributions over ncol(DTM) terms
-#rowSums(beta) # rows in beta sum to 1
-#nrow(bigram_dfm) # size of collection
-# for every document we have a probability distribution of # its contained topics
-#theta <- tmResult$topics
-#dim(theta) # nDocs(DTM) distributions over K topics
-#rowSums(theta)[1:10] # rows in theta sum to 1
+beta <- tmResult$terms
+theta <- tmResult$topics
 
 terms(topicModel, 10)
+
+# fuer die Topics Namen "bauen" in Uebung, fuer Arbeit nicht sinnvoll
 #top5termsPerTopic <- terms(topicModel, 5)
 #topicNames <- apply(top5termsPerTopic, 2, paste, collapse = " ")
 
 # ich weiss nicht, ob es der richtige Weg ist, nur Bigramme zu vewenden!?!?!?!?
-
+# -> Diskussion
 
 # Visualisierung
 
-
+# LDAvis browser analog zur Uebung:
+library(LDAvis)
+library("tsne")
+svd_tsne <- function(x) tsne(svd(x)$u)
+json <- createJSON(phi = beta, theta = theta, doc.length = rowSums(bigram_dfm),
+                   vocab = colnames(bigram_dfm), term.frequency = colSums(bigram_dfm), mds.method = svd_tsne,
+                   plot.opts = list(xlab = "", ylab = "")) 
+serVis(json)
