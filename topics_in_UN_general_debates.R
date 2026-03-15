@@ -150,4 +150,30 @@ ggplot(vizDataFrame,
   scale_fill_manual(values = paste0(alphabet(20), "FF"), name = "decade") + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
+# nochmal Visualisierung, aber zu einem Meta-Thema zusammengehoerige Topics sind in einer Farbe dargestellt
+
+vizDataFrame <- vizDataFrame %>%
+  mutate(
+    meta_theme = case_when(
+      variable %in% topicNames[c(5,8,11,15)] ~ "strukturelle Themen",
+      variable %in% topicNames[c(4,16,17,18)] ~ "Kalter Krieg",
+      variable %in% topicNames[c(1,2,3,6,9,12,13,14,19)] ~ "regionale Konflikte",
+      variable %in% topicNames[c(7,10,20)] ~ "aktuelle globale Herausforderungen",
+      TRUE ~ "Sonstige"
+    )
+  )
+
+ggplot(vizDataFrame, 
+       aes(x=decade, y=value, fill=meta_theme, group=variable)) + 
+  geom_bar(stat="identity", color="white", linewidth=0.2) +
+  ylab("proportion") +
+  xlab("decade") +
+  scale_fill_brewer(palette = "Set1", name = "Meta-Themen") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+
+
 
